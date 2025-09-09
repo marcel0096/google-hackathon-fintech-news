@@ -1,49 +1,56 @@
 import json
 
 
-def parse_agent_run_response(raw_json):
+def extract_agent_responses(raw_json):
     """
-    Simplifies the raw JSON response from the agent to a more readable list of dictionaries
-    with only the relevant fields: title, extensive_summary, sentiment, source, publication_date.
+    Parses the raw JSON from the endpoint and extracts the google_agent and twitter_agent responses.
+    Cleans the Markdown code fences and returns valid JSON for both feeds.
 
-    Parameters:
-        raw_json (str or list): Raw JSON string or already parsed JSON list.
+    Args:
+        raw_json (str or dict): The JSON string or dict returned from the endpoint.
 
     Returns:
-        list: Simplified list of dictionaries.
+        dict: A dictionary containing 'google_feed' and 'twitter_feed' results.
     """
-    # Parse the JSON if it's a string
+    # Convert to dict if JSON string is provided
     if isinstance(raw_json, str):
         data = json.loads(raw_json)
     else:
         data = raw_json
 
-    simplified = []
+    result = {"google_feed": None, "twitter_feed": None}
 
+    def clean_markdown_json(raw_str):
+        """Remove ```json fences and parse inner JSON"""
+        content_str = raw_str.strip()
+        if content_str.startswith("```json"):
+            content_str = content_str[7:]
+        if content_str.endswith("```"):
+            content_str = content_str[:-3]
+        return json.loads(content_str)
+
+    # Iterate through the top-level array
     for item in data:
         parts = item.get("content", {}).get("parts", [])
         for part in parts:
-            # Check if this part has a functionResponse with a result
-            function_response = part.get("functionResponse", {})
-            response = function_response.get("response", {})
-            result_str = response.get("result")
+            function_response = part.get("functionResponse")
+            if function_response:
+                name = function_response.get("name")
+                response_result = function_response.get("response", {}).get("result")
+                if response_result:
+                    # Clean the Markdown JSON and parse
+                    parsed_result = clean_markdown_json(response_result)
+                    if name == "google_agent":
+                        result["google_feed"] = parsed_result
+                    elif name == "twitter_agent":
+                        # For Twitter, extract the 'result' array inside 'fetch_X_tool_response'
+                        result["twitter_feed"] = parsed_result.get(
+                            "fetch_X_tool_response", {}
+                        ).get("result", [])
 
-            if result_str:
-                try:
-                    # Load the JSON string inside result
-                    result_json = json.loads(result_str)
-                    for article in result_json:
-                        simplified.append(
-                            {
-                                "title": article.get("title"),
-                                "extensive_summary": article.get("extensive_summary"),
-                                "sentiment": article.get("sentiment"),
-                                "source": article.get("source"),
-                                "publication_date": article.get("publication_date"),
-                            }
-                        )
-                except json.JSONDecodeError:
-                    # Skip if result_str is not valid JSON
-                    continue
+    return result
 
-    return simplified
+
+# Example usage:
+# parsed = extract_agent_responses(endpoint_json)
+# print(json.dumps(parsed, indent=2))
