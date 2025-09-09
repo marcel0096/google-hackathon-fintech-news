@@ -1,55 +1,49 @@
 import json
-from typing import Any, Dict, List
 
 
-def parse_agent_run_response(raw_response: List[Dict[str, Any]]) -> Dict[str, Any]:
+def parse_agent_run_response(raw_json):
     """
-    Parses the raw /run response from your agent and returns structured JSON
-    with google_news and twitter_news.
+    Simplifies the raw JSON response from the agent to a more readable list of dictionaries
+    with only the relevant fields: title, extensive_summary, sentiment, source, publication_date.
+
+    Parameters:
+        raw_json (str or list): Raw JSON string or already parsed JSON list.
+
+    Returns:
+        list: Simplified list of dictionaries.
     """
-    parsed_result = {"google_news": [], "twitter_news": []}
+    # Parse the JSON if it's a string
+    if isinstance(raw_json, str):
+        data = json.loads(raw_json)
+    else:
+        data = raw_json
 
-    for event in raw_response:
-        if "content" not in event:
-            continue
+    simplified = []
 
-        for part in event["content"].get("parts", []):
-            func_resp = part.get("functionResponse")
-            if not func_resp:
-                continue
+    for item in data:
+        parts = item.get("content", {}).get("parts", [])
+        for part in parts:
+            # Check if this part has a functionResponse with a result
+            function_response = part.get("functionResponse", {})
+            response = function_response.get("response", {})
+            result_str = response.get("result")
 
-            result_str = func_resp.get("response", {}).get("result")
-            if not result_str:
-                continue
+            if result_str:
+                try:
+                    # Load the JSON string inside result
+                    result_json = json.loads(result_str)
+                    for article in result_json:
+                        simplified.append(
+                            {
+                                "title": article.get("title"),
+                                "extensive_summary": article.get("extensive_summary"),
+                                "sentiment": article.get("sentiment"),
+                                "source": article.get("source"),
+                                "publication_date": article.get("publication_date"),
+                            }
+                        )
+                except json.JSONDecodeError:
+                    # Skip if result_str is not valid JSON
+                    continue
 
-            try:
-                # Clean possible markdown fences
-                cleaned = result_str.strip()
-                if cleaned.startswith("```"):
-                    cleaned = (
-                        cleaned.removeprefix("```json")
-                        .removeprefix("```")
-                        .removesuffix("```")
-                        .strip()
-                    )
-
-                data = json.loads(cleaned)
-
-                # ✅ Case: Google
-                if "google_news" in data:
-                    parsed_result["google_news"].extend(data["google_news"])
-
-                # ✅ Case: Twitter direct
-                if "twitter_news" in data:
-                    parsed_result["twitter_news"].extend(data["twitter_news"])
-
-                # ✅ Case: Twitter wrapped in fetch_X_tool_response
-                if "fetch_X_tool_response" in data:
-                    parsed_result["twitter_news"].extend(
-                        data["fetch_X_tool_response"].get("result", [])
-                    )
-
-            except Exception as e:
-                print(f"Failed to parse {func_resp.get('name', '?')} result:", e)
-
-    return parsed_result
+    return simplified

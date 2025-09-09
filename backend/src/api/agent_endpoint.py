@@ -44,8 +44,8 @@ async def ask_agent(req: UserPrompt):
 
             # 3️⃣ Return the raw events list exactly as received
             raw_response = run_resp.json()
-            parsed_json = parse_agent_run_response(raw_response)
-            return parsed_json
+            # parsed_json = parse_agent_run_response(raw_response)
+            return raw_response
 
         except httpx.HTTPStatusError as e:
             logging.error(f"HTTP error: {e}")
