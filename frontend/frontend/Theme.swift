@@ -25,11 +25,11 @@ enum Finora {
         blue: 0x36/255
     ) // frosted base
 
-    static let primary     = Color(
-        red: 0x3D/255,
-        green: 0xD9/255,
-        blue: 0xD4/255
-    ) // #3DD9D4
+    static let primary = Color(
+        red: 0x7C/255,
+        green: 0x3A/255,
+        blue: 0xED/255
+    ) // #7C3AED (Violet)
     static let secondary   = Color(
         red: 0xD4/255,
         green: 0xC3/255,
