@@ -1,182 +1,247 @@
 import SwiftUI
 
-// MARK: - Model (matches backend)
+// MARK: - Models
 struct NewsFlash: Identifiable, Codable {
-    var id: String
+    var id: String { title + source } // Simple unique id
     let title: String
-    let summary: String
+    let extensive_summary: String
     let source: String
-    let created_at: String
+    let publication_date: String
     let sentiment: String
+}
+
+struct TwitterPost: Identifiable, Codable {
+    var id: String { (author ?? "") + (created_at ?? "") + (url ?? "") }
+    
+    let author: String?
+    let created_at: String?
+    let text: String?
+    let url: String?
+    
+    // Optional extra fields from JSON (to avoid decode crashes)
+    let metric: String?
+    let engagement_score: Int?
+    let followers_count: Int?
+    let likes: Int?
+    let replies: Int?
+    let reposts: Int?
+}
+
+struct NewsResponse: Codable {
+    let google_feed: [NewsFlash]
+    let twitter_feed: [TwitterPost]?
+}
+
+// Wrapper for selected item to use with sheet(item:)
+struct SelectedItem: Identifiable {
+    let id = UUID().uuidString
+    let title: String
+    let content: String
 }
 
 // MARK: - View
 struct NewsFeedView: View {
-    @State private var news: [NewsFlash] = []
-    @State private var selectedNews: NewsFlash? = nil
-    @State private var isLoading = true
+    @State private var googleNews: [NewsFlash] = []
+    @State private var twitterNews: [TwitterPost] = []
+    @State private var selectedItem: SelectedItem? = nil
+    @State private var isLoading = false
     @State private var errorMessage: String? = nil
+    
+    @State private var showPromptInput = false
+    @State private var userPrompt = ""
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 18) {
-
-                // Header
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Personalized Feed!").font(.title2).bold()
-                            .foregroundStyle(Finora.textPrimary)
-                        Text("Stay informed based on your preferences")
-                            .foregroundStyle(Finora.textMuted)
+        ZStack(alignment: .topTrailing) {
+            ScrollView {
+                VStack(spacing: 18) {
+                    // Header
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Your Personalized Feed!").font(.title2).bold()
+                            Text("Stay informed based on your preferences")
+                                .foregroundColor(.gray)
+                        }
+                        Spacer()
+                        Image(systemName: "ellipsis")
+                            .foregroundColor(.gray)
                     }
-                    Spacer()
-                    Image(systemName: "ellipsis").foregroundStyle(
-                        Finora.textSecondary)
-                }
-                .padding(.horizontal)
-
-                // News Highlights Section
-                HStack {
-                    Text("News Highlights")
-                        .font(.headline)
-                    Spacer()
-                }
-                .foregroundStyle(Finora.textPrimary)
-                .padding(.horizontal)
-                .padding(.top, 16)
-
-                if isLoading {
-                    ProgressView("Loading news...")
-                        .padding()
-                } else if let errorMessage = errorMessage {
-                    Text("⚠️ \(errorMessage)")
-                        .foregroundStyle(.red)
-                        .padding()
-                } else {
-                    ForEach(news) { n in
-                        Button {
-                            selectedNews = n
-                        } label: {
-                            GlassCard {
+                    .padding(.horizontal)
+                    
+                    // News Highlights
+                    HStack {
+                        Text("News Highlights")
+                            .font(.headline)
+                        Spacer()
+                    }
+                    .padding(.horizontal)
+                    .padding(.top, 16)
+                    
+                    if isLoading {
+                        ProgressView("Fetching news based on your interests…")
+                            .padding()
+                    } else if let errorMessage = errorMessage {
+                        Text("⚠️ \(errorMessage)")
+                            .foregroundColor(.red)
+                            .padding()
+                    } else {
+                        // Google News
+                        ForEach(googleNews) { n in
+                            Button {
+                                selectedItem = SelectedItem(title: n.title, content: n.extensive_summary)
+                            } label: {
                                 VStack(alignment: .leading, spacing: 8) {
-                                    // Title + trending emoji
                                     HStack {
                                         Text(n.title)
                                             .font(.subheadline)
                                             .bold()
-                                            .foregroundStyle(Finora.textPrimary)
                                         if n.sentiment == "bullish" { Text("🚀").font(.caption) }
                                         else if n.sentiment == "bearish" { Text("📉").font(.caption) }
                                     }
-
-                                    // Summary (2 lines)
-                                    Text(n.summary)
-                                        .foregroundStyle(Finora.textSecondary)
+                                    Text(n.extensive_summary)
                                         .font(.footnote)
                                         .lineLimit(2)
-
-                                    // Source / time + Read more
                                     HStack {
-                                        HStack(spacing: 8) {
-                                            Text(n.source)
-                                                .foregroundStyle(Finora.textMuted)
-                                                .font(.caption)
-                                            Image(systemName: "clock")
-                                                .font(.caption2)
-                                                .foregroundStyle(Finora.textMuted)
-                                            Text(n.created_at)
-                                                .foregroundStyle(Finora.textMuted)
-                                                .font(.caption)
-                                        }
-                                        Spacer()
-                                        Text("Read more")
+                                        Text(n.source)
                                             .font(.caption)
-                                            .foregroundStyle(Finora.primary)
+                                            .foregroundColor(.gray)
+                                        Spacer()
+                                        Text(n.publication_date)
+                                            .font(.caption)
+                                            .foregroundColor(.gray)
                                     }
                                 }
-                                .padding(12)
+                                .padding()
+                                .background(Color(.secondarySystemBackground))
+                                .cornerRadius(12)
                             }
+                            .buttonStyle(.plain)
                             .padding(.horizontal)
                         }
-                        .buttonStyle(.plain)
+                        
+                        // Twitter News
+                        if !twitterNews.isEmpty {
+                            HStack {
+                                Text("Twitter Posts")
+                                    .font(.headline)
+                                Spacer()
+                            }
+                            .padding(.horizontal)
+                            .padding(.top, 16)
+                            
+                            ForEach(twitterNews) { t in
+                                Button {
+                                    selectedItem = SelectedItem(title: t.author ?? "Unknown Author", content: t.text ?? "")
+                                } label: {
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        HStack {
+                                            Text(t.author ?? "Unknown Author")
+                                                .font(.subheadline)
+                                                .bold()
+                                        }
+                                        Text(t.text ?? "")
+                                            .font(.footnote)
+                                            .lineLimit(2)
+                                        Text(t.created_at ?? "")
+                                            .font(.caption)
+                                            .foregroundColor(.gray)
+                                    }
+                                    .padding()
+                                    .background(Color(.secondarySystemBackground))
+                                    .cornerRadius(12)
+                                }
+                                .buttonStyle(.plain)
+                                .padding(.horizontal)
+                            }
+                        }
                     }
+                    Spacer(minLength: 24)
                 }
-
-                Spacer(minLength: 24)
+            }
+            
+            // Chat Icon
+            Button {
+                showPromptInput = true
+            } label: {
+                Image(systemName: "message.circle.fill")
+                    .font(.system(size: 40))
+                    .padding()
+                    .foregroundColor(.blue)
             }
         }
-        .background(Finora.background.ignoresSafeArea())
-        .onAppear {
-            fetchNews()
-        }
-        .sheet(item: $selectedNews) { n in
+        .sheet(item: $selectedItem) { item in
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    Text(n.title)
+                    Text(item.title)
                         .font(.title2.bold())
-                        .foregroundStyle(Finora.textPrimary)
-
-                    HStack {
-                        Text(n.source)
-                        Text("•")
-                        Text(n.created_at)
-                    }
-                    .font(.subheadline)
-                    .foregroundStyle(Finora.textMuted)
-
-                    Text(n.summary)
+                    Text(item.content)
                         .font(.body)
-                        .foregroundStyle(Finora.textSecondary)
-                        .fixedSize(horizontal: false, vertical: true)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                .padding(.bottom, 24)
+                .padding()
             }
-            .presentationDetents([.medium, .large])
-            .presentationBackground(Finora.background) // <-- requires iOS 16.4+
-            .presentationDragIndicator(.visible)
-            .preferredColorScheme(.dark)
+        }
+        .sheet(isPresented: $showPromptInput) {
+            VStack(spacing: 16) {
+                Text("Enter your prompt")
+                    .font(.headline)
+                TextField("Type here...", text: $userPrompt)
+                    .textFieldStyle(.roundedBorder)
+                    .padding()
+                Button("Send") {
+                    showPromptInput = false
+                    fetchNews(with: userPrompt)
+                }
+                .buttonStyle(.borderedProminent)
+                Spacer()
+            }
+            .padding()
         }
     }
-
+    
     // MARK: - Networking
-    private func fetchNews() {
-        guard let url = URL(string: "http://127.0.0.1:8000/news") else {
+    private func fetchNews(with prompt: String = "") {
+        guard let url = URL(string: "http://127.0.0.1:9000/ask_agent") else {
             self.errorMessage = "Invalid URL"
-            self.isLoading = false
             return
         }
-
-        URLSession.shared.dataTask(with: url) { data, response, error in
+        
+        isLoading = true
+        errorMessage = nil
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.timeoutInterval = 120
+        let body: [String: String] = ["prompt": prompt]
+        request.httpBody = try? JSONEncoder().encode(body)
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
             DispatchQueue.main.async {
-                self.isLoading = false
-
+                isLoading = false
+                
                 if let error = error {
                     self.errorMessage = "Failed to load news: \(error.localizedDescription)"
                     return
                 }
-
+                
                 guard let data = data else {
                     self.errorMessage = "No data received"
                     return
                 }
-
+                
+                if let raw = String(data: data, encoding: .utf8) {
+                    print("RAW RESPONSE:\n\(raw)")
+                }
+                
                 do {
-                    let decoded = try JSONDecoder().decode([NewsFlash].self, from: data)
-                    self.news = decoded
+                    let decoded = try JSONDecoder().decode(NewsResponse.self, from: data)
+                    self.googleNews = decoded.google_feed
+                    self.twitterNews = decoded.twitter_feed ?? [] // fallback to empty
                 } catch {
                     self.errorMessage = "Decoding error: \(error.localizedDescription)"
+                    self.googleNews = []
+                    self.twitterNews = []
                 }
             }
         }.resume()
-    }
-}
-
-// MARK: - Preview
-struct NewsFeedView_Previews: PreviewProvider {
-    static var previews: some View {
-        NewsFeedView()
     }
 }
