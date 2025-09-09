@@ -18,7 +18,6 @@ struct TwitterPost: Identifiable, Codable {
     let text: String
     let url: String
     
-    // Optional extra fields from JSON (to avoid decode crashes)
     let metric: String?
     let engagement_score: Int?
     let followers_count: Int?
@@ -32,7 +31,6 @@ struct NewsResponse: Codable {
     let twitter_feed: [TwitterPost]
 }
 
-// Wrapper for selected item to use with sheet(item:)
 struct SelectedItem: Identifiable {
     let id = UUID().uuidString
     let title: String
@@ -57,7 +55,9 @@ struct NewsFeedView: View {
                     // Header
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Your Personalized Feed!").font(.title2).bold()
+                            Text("Your Personalized Feed!")
+                                .font(.title)
+                                .bold()
                             Text("Stay informed based on your preferences")
                                 .foregroundColor(.gray)
                         }
@@ -77,13 +77,18 @@ struct NewsFeedView: View {
                         
                         HStack {
                             Text("📈 Bullish: \(bullishPercent)%")
-                                .font(.caption)
+                                .font(.title2)
+                                .bold()
                                 .foregroundColor(.green)
                             Spacer()
                             Text("📉 Bearish: \(bearishPercent)%")
-                                .font(.caption)
+                                .font(.title2)
+                                .bold()
                                 .foregroundColor(.red)
                         }
+                        .padding()
+                        .background(Color(.secondarySystemBackground))
+                        .cornerRadius(12)
                         .padding(.horizontal)
                     }
                     
@@ -114,8 +119,8 @@ struct NewsFeedView: View {
                                         Text(n.title)
                                             .font(.subheadline)
                                             .bold()
-                                        if n.sentiment == "bullish" { Text("🚀").font(.caption) }
-                                        else if n.sentiment == "bearish" { Text("📉").font(.caption) }
+                                        if n.sentiment.lowercased() == "bullish" { Text("🚀").font(.caption) }
+                                        else if n.sentiment.lowercased() == "bearish" { Text("📉").font(.caption) }
                                     }
                                     Text(n.extensive_summary)
                                         .font(.footnote)
@@ -138,15 +143,7 @@ struct NewsFeedView: View {
                             .padding(.horizontal)
                         }
                         
-                        // Twitter News
-                        HStack {
-                            Text("Twitter Posts")
-                                .font(.headline)
-                            Spacer()
-                        }
-                        .padding(.horizontal)
-                        .padding(.top, 16)
-                        
+                        // Twitter News (no headline)
                         ForEach(twitterNews) { t in
                             Button {
                                 selectedItem = SelectedItem(title: t.author, content: t.text)
@@ -176,13 +173,14 @@ struct NewsFeedView: View {
                 }
             }
             
-            // Chat Icon
+            // Chat Icon (moved down)
             Button {
                 showPromptInput = true
             } label: {
                 Image(systemName: "message.circle.fill")
                     .font(.system(size: 40))
-                    .padding()
+                    .padding(.top, 120) // pushed down
+                    .padding(.trailing)
                     .foregroundColor(.blue)
             }
         }
@@ -199,7 +197,7 @@ struct NewsFeedView: View {
         }
         .sheet(isPresented: $showPromptInput) {
             VStack(spacing: 16) {
-                Text("Enter your prompt")
+                Text("Enter a prompt to customize your news feed")
                     .font(.headline)
                 TextField("Type here...", text: $userPrompt)
                     .textFieldStyle(.roundedBorder)
@@ -247,9 +245,21 @@ struct NewsFeedView: View {
                 }
                 
                 do {
-                    let decoded = try JSONDecoder().decode(NewsResponse.self, from: data)
-                    self.googleNews = decoded.google_feed
-                    self.twitterNews = decoded.twitter_feed
+                    if let jsonObj = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                        if let googleArray = jsonObj["google_feed"] as? [[String: Any]],
+                           let twitterArray = jsonObj["twitter_feed"] as? [[String: Any]] {
+                            
+                            let googleData = try JSONSerialization.data(withJSONObject: googleArray)
+                            let twitterData = try JSONSerialization.data(withJSONObject: twitterArray)
+                            
+                            self.googleNews = try JSONDecoder().decode([NewsFlash].self, from: googleData)
+                            self.twitterNews = try JSONDecoder().decode([TwitterPost].self, from: twitterData)
+                        } else {
+                            self.errorMessage = "Unexpected JSON structure"
+                        }
+                    } else {
+                        self.errorMessage = "Invalid JSON format"
+                    }
                 } catch {
                     self.errorMessage = "Decoding error: \(error.localizedDescription)"
                 }
