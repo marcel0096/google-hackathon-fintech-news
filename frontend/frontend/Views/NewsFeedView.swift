@@ -1,73 +1,21 @@
 import SwiftUI
 
-// MARK: - Model
-struct NewsFlash: Identifiable {
-    let id = UUID()
+// MARK: - Model (matches backend)
+struct NewsFlash: Identifiable, Codable {
+    var id: String
     let title: String
     let summary: String
     let source: String
-    let time: String
-    let trending: Bool
-    let content: String
+    let created_at: String
+    let sentiment: String
 }
 
-struct AssetSummary: Identifiable {
-    let id = UUID()
-    let category: String
-    let up: Int
-    let down: Int
-    let total: Int
-}
-
-// MARK: - Mock data
-let mockNews: [NewsFlash] = [
-    .init(
-        title: "Fed Announces Rate Cut",
-        summary: "Markets react positively to monetary policy easing.",
-        source: "Reuters",
-        time: "1h ago",
-        trending: true,
-        content:
-            "Full article content goes here. The Federal Reserve has signaled a potential rate cut..."
-    ),
-    .init(
-        title: "Tesla Q3 Deliveries Beat Expectations",
-        summary: "EV manufacturer exceeds forecasted numbers.",
-        source: "Bloomberg",
-        time: "2h ago",
-        trending: false,
-        content:
-            "Tesla reports record deliveries in Q3 despite supply chain challenges..."
-    ),
-    .init(
-        title: "Oil Prices Surge",
-        summary: "Geopolitical tensions push Brent crude higher.",
-        source: "Financial Times",
-        time: "3h ago",
-        trending: false,
-        content:
-            "Oil prices rise sharply due to Middle East tensions and OPEC+ production cuts..."
-    ),
-    .init(
-        title: "NVIDIA Reports Record Revenue",
-        summary: "AI chip demand drives massive growth.",
-        source: "TechCrunch",
-        time: "4h ago",
-        trending: true,
-        content:
-            "NVIDIA's AI chip sales have skyrocketed, driving record quarterly revenue..."
-    ),
-]
-
-// MARK: - NewsFeedView
+// MARK: - View
 struct NewsFeedView: View {
+    @State private var news: [NewsFlash] = []
     @State private var selectedNews: NewsFlash? = nil
-
-    let assets: [AssetSummary] = [
-        .init(category: "Stocks", up: 124, down: 87, total: 350),
-        .init(category: "Crypto", up: 45, down: 12, total: 90),
-        .init(category: "ETFs", up: 23, down: 30, total: 110),
-    ]
+    @State private var isLoading = true
+    @State private var errorMessage: String? = nil
 
     var body: some View {
         ScrollView {
@@ -87,44 +35,7 @@ struct NewsFeedView: View {
                 }
                 .padding(.horizontal)
 
-                // Market Overview cards
-                VStack(spacing: 12) {
-                    HStack {
-                        Text("Market Overview").font(.headline)
-                        Spacer()
-                        //Image(systemName: "chevron.right")
-                    }.foregroundStyle(Finora.textPrimary)
-                    LazyVGrid(
-                        columns: Array(
-                            repeating: .init(.flexible(), spacing: 12), count: 3
-                        ), spacing: 12
-                    ) {
-                        ForEach(assets) { item in
-                            GlassCard {
-                                Text(item.category).font(.subheadline)
-                                    .fontWeight(.semibold)
-                                HStack(spacing: 8) {
-                                    Label(
-                                        "\(item.up)",
-                                        systemImage: "arrow.up.right"
-                                    )
-                                    .foregroundStyle(Finora.success).font(
-                                        .caption)
-                                    Label(
-                                        "\(item.down)",
-                                        systemImage: "arrow.down.right"
-                                    )
-                                    .foregroundStyle(Finora.danger).font(
-                                        .caption)
-                                }
-                                Text("\(item.total) assets").font(.caption)
-                                    .foregroundStyle(Finora.textMuted)
-                            }
-                        }
-                    }
-                }
-                .padding(.horizontal)
-
+                // News Highlights Section
                 HStack {
                     Text("News Highlights")
                         .font(.headline)
@@ -134,88 +45,132 @@ struct NewsFeedView: View {
                 .padding(.horizontal)
                 .padding(.top, 16)
 
-                ForEach(mockNews) { n in
-                    Button {
-                        selectedNews = n
-                    } label: {
-                        GlassCard {
-                            VStack(alignment: .leading, spacing: 8) {
-                                // Title + trending emoji
-                                HStack {
-                                    Text(n.title)
-                                        .font(.subheadline)
-                                        .bold()
-                                        .foregroundStyle(Finora.textPrimary)
-                                    if n.trending { Text("🚀").font(.caption) }
-                                }
-
-                                // Summary
-                                Text(n.summary)
-                                    .foregroundStyle(Finora.textSecondary)
-                                    .font(.footnote)
-
-                                // Source / time + Read more
-                                HStack {
-                                    HStack(spacing: 8) {
-                                        Text(n.source)
-                                            .foregroundStyle(Finora.textMuted)
-                                            .font(.caption)
-                                        Image(systemName: "clock")
-                                            .font(.caption2)
-                                            .foregroundStyle(Finora.textMuted)
-                                        Text(n.time)
-                                            .foregroundStyle(Finora.textMuted)
-                                            .font(.caption)
+                if isLoading {
+                    ProgressView("Loading news...")
+                        .padding()
+                } else if let errorMessage = errorMessage {
+                    Text("⚠️ \(errorMessage)")
+                        .foregroundStyle(.red)
+                        .padding()
+                } else {
+                    ForEach(news) { n in
+                        Button {
+                            selectedNews = n
+                        } label: {
+                            GlassCard {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    // Title + trending emoji
+                                    HStack {
+                                        Text(n.title)
+                                            .font(.subheadline)
+                                            .bold()
+                                            .foregroundStyle(Finora.textPrimary)
+                                        if n.sentiment == "bullish" { Text("🚀").font(.caption) }
+                                        else if n.sentiment == "bearish" { Text("📉").font(.caption) }
                                     }
-                                    Spacer()
-                                    Text("Read more")
-                                        .font(.caption)
-                                        .foregroundStyle(Finora.primary)
+
+                                    // Summary (2 lines)
+                                    Text(n.summary)
+                                        .foregroundStyle(Finora.textSecondary)
+                                        .font(.footnote)
+                                        .lineLimit(2)
+
+                                    // Source / time + Read more
+                                    HStack {
+                                        HStack(spacing: 8) {
+                                            Text(n.source)
+                                                .foregroundStyle(Finora.textMuted)
+                                                .font(.caption)
+                                            Image(systemName: "clock")
+                                                .font(.caption2)
+                                                .foregroundStyle(Finora.textMuted)
+                                            Text(n.created_at)
+                                                .foregroundStyle(Finora.textMuted)
+                                                .font(.caption)
+                                        }
+                                        Spacer()
+                                        Text("Read more")
+                                            .font(.caption)
+                                            .foregroundStyle(Finora.primary)
+                                    }
                                 }
+                                .padding(12)
                             }
-                            .padding(12)
+                            .padding(.horizontal)
                         }
-                        .padding(.horizontal)
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
 
                 Spacer(minLength: 24)
             }
         }
         .background(Finora.background.ignoresSafeArea())
+        .onAppear {
+            fetchNews()
+        }
         .sheet(item: $selectedNews) { n in
-            VStack(spacing: 12) {
-                Capsule()
-                    .fill(Finora.textMuted)
-                    .frame(width: 44, height: 5)
-                    .padding(.top, 8)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text(n.title)
+                        .font(.title2.bold())
+                        .foregroundStyle(Finora.textPrimary)
 
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text(n.title)
-                            .font(.title2.bold())
-                            .foregroundStyle(Finora.textPrimary)
-
-                        HStack {
-                            Text(n.source)
-                            Text("•")
-                            Text(n.time)
-                        }
-                        .font(.subheadline)
-                        .foregroundStyle(Finora.textMuted)
-
-                        Text(n.content)
-                            .font(.body)
-                            .foregroundStyle(Finora.textSecondary)
+                    HStack {
+                        Text(n.source)
+                        Text("•")
+                        Text(n.created_at)
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 24)
+                    .font(.subheadline)
+                    .foregroundStyle(Finora.textMuted)
+
+                    Text(n.summary)
+                        .font(.body)
+                        .foregroundStyle(Finora.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+                .padding(.bottom, 24)
             }
             .presentationDetents([.medium, .large])
+            .presentationBackground(Finora.background) // <-- requires iOS 16.4+
             .presentationDragIndicator(.visible)
+            .preferredColorScheme(.dark)
         }
+    }
+
+    // MARK: - Networking
+    private func fetchNews() {
+        guard let url = URL(string: "http://127.0.0.1:8000/news") else {
+            self.errorMessage = "Invalid URL"
+            self.isLoading = false
+            return
+        }
+
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            DispatchQueue.main.async {
+                self.isLoading = false
+
+                if let error = error {
+                    self.errorMessage = "Failed to load news: \(error.localizedDescription)"
+                    return
+                }
+
+                guard let data = data else {
+                    self.errorMessage = "No data received"
+                    return
+                }
+
+                do {
+                    let decoded = try JSONDecoder().decode([NewsFlash].self, from: data)
+                    self.news = decoded
+                } catch {
+                    self.errorMessage = "Decoding error: \(error.localizedDescription)"
+                }
+            }
+        }.resume()
     }
 }
 
