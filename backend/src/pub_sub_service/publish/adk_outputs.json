@@ -1,0 +1,155 @@
+{
+    "google_news": [
+        {
+            "title": "Elon Musk Sues Apple and OpenAI, Alleging AI Competition is Stifled",
+            "extensive_summary": "Elon Musk's xAI and X Corp. have filed an antitrust lawsuit against Apple and OpenAI in a Texas federal court. The lawsuit alleges that Apple and OpenAI have colluded to disadvantage competitors in the artificial intelligence sector. [5] The complaint, a 61-page document, claims Apple is manipulating its App Store rankings to unfairly favor OpenAI's ChatGPT over rival chatbots like Musk's Grok. [5] The suit argues that this partnership creates a monopoly, restricts consumer choice, and prevents innovators like xAI from competing fairly. [8] Musk is seeking monetary damages and a court order to halt these alleged illegal practices. [5] This legal action follows through on threats Musk made earlier in the month on social media. [5]",
+            "sentiment": "bearish",
+            "source": "CBS News",
+            "publication_date": "2025-08-25"
+        },
+        {
+            "title": "Musk Sues Apple and OpenAI Over iPhone AI Deal",
+            "extensive_summary": "Elon Musk is suing Apple and OpenAI over their agreement to integrate ChatGPT into iPhones, iPads, and MacBooks. [7] The lawsuit, filed by Musk's xAI, contends that Apple's ecosystem locks consumers into using ChatGPT, thereby providing OpenAI with vast amounts of user data to improve its AI models. [7] The suit also reiterates claims that Apple has manipulated App Store rankings to the detriment of other AI chatbots, a point Musk has been vocal about on X. [7] Apple has previously denied these claims, stating their editorial choices are based on quality and user experience. [4]",
+            "sentiment": "bearish",
+            "source": "CNET",
+            "publication_date": "2025-08-25"
+        },
+        {
+            "title": "Apple Responds to Elon Musk's 'Will Take Apple to Court' Threat",
+            "extensive_summary": "In response to Elon Musk's accusations of favoring OpenAI's ChatGPT in the App Store, Apple has stated that its editorial selections are based on quality and user experience, not politics or partnerships. [4] Musk had alleged in a series of posts on X that Apple's actions constitute an 'unequivocal antitrust violation' and that his company, xAI, would take legal action. [4] He criticized Apple for excluding his apps, X and Grok, from the App Store's 'Must-Have' section despite their popularity. [4] Apple's response emphasized that their goal is to provide safe discovery for users and valuable opportunities for developers. [4]",
+            "sentiment": "bearish",
+            "source": "Times of India",
+            "publication_date": "2025-08-13"
+        },
+        {
+            "title": "Elon Musk Accuses Apple of Unfairly Favoring OpenAI on iPhone",
+            "extensive_summary": "Elon Musk publicly criticized Apple, alleging the company gives preferential treatment to OpenAI within its App Store. [1] In a post on his social media platform X, Musk questioned if Apple was 'playing politics' by not featuring his products more prominently. [1, 10] He stated that xAI would pursue legal action for what he considers an antitrust violation. [1] The criticism stems from the partnership between Apple and OpenAI, which integrates ChatGPT into the latest iPhones. [1]",
+            "sentiment": "bearish",
+            "source": "Irish Examiner",
+            "publication_date": "2025-08-12"
+        },
+        {
+            "title": "Elon Musk Calls Out Apple for Allegedly Snubbing X in App Store",
+            "extensive_summary": "Elon Musk accused Apple of snubbing his app X in the App Store, suggesting the move could be politically motivated. [6] Responding to a post highlighting X as a top news app, Musk publicly asked Apple why his apps, X and Grok, were not featured in the 'Must Have' section of the store, given their high rankings. [6] This is not the first time Musk has had public disagreements with Apple and its CEO, Tim Cook, regarding the treatment of his app (formerly Twitter). [6]",
+            "sentiment": "bearish",
+            "source": "TMZ",
+            "publication_date": "2025-08-11"
+        }
+    ],
+    "twitter_feed": {
+        "fetch_X_tool_response": {
+            "result": [
+                {
+                    "author": "cupidsmolotov.bsky.social",
+                    "created_at": "2025-09-06T02:44:42.821Z",
+                    "engagement_score": 1,
+                    "followers_count": 1847,
+                    "likes": 1,
+                    "replies": 0,
+                    "reposts": 0,
+                    "text": "So tesla has offered Elon a pay package (?) of One Trillion USD.\n\nYeah it looks like bullshit.\n\nWhich ofc is typical of Elon.",
+                    "url": "https://bsky.app/profile/cupidsmolotov.bsky.social/post/3ly55rwax2c2q"
+                },
+                {
+                    "author": "some-news.bsky.social",
+                    "created_at": "2025-09-04T14:01:11.414910+00:00",
+                    "engagement_score": 1,
+                    "followers_count": 529,
+                    "likes": 1,
+                    "replies": 0,
+                    "reposts": 0,
+                    "text": "Invitees include Meta founder Mark Zuckerberg, Apple CEO Tim Cook, Microsoft founder Bill Gates and OpenAI founder Sam Altman. Elon Musk was not on the list.",
+                    "url": "https://bsky.app/profile/some-news.bsky.social/post/3lxzcnpl3hj22"
+                },
+                {
+                    "author": "llms.activitypub.awakari.com.ap.brid.gy",
+                    "created_at": "2025-09-04T10:28:32.000Z",
+                    "engagement_score": 1,
+                    "followers_count": 282,
+                    "likes": 1,
+                    "replies": 0,
+                    "reposts": 0,
+                    "text": "Opinion: The $2 billion AI gold rush, and why Elon Musk isn’t best pleased Dario Betti, CEO, Mobile Ecosystem Forum (MEF) has penned an exclusive op-ed for tahawultech.com, where he examines the ...\n\n#Home-Slide #News #AI #Apple #apps #bias #ChatGPT #Dario […] \n\n[Original post on tahawultech.com]",
+                    "url": "https://bsky.app/profile/llms.activitypub.awakari.com.ap.brid.gy/post/3lxyzjpssxe72"
+                },
+                {
+                    "author": "u24usa.bsky.social",
+                    "created_at": "2025-09-05T10:57:10Z",
+                    "engagement_score": 0,
+                    "followers_count": 61,
+                    "likes": 0,
+                    "replies": 0,
+                    "reposts": 0,
+                    "text": "Tech executives, but not Elon Musk, to attend Trump’s Rose Garden dinner\n\nPresident Trump is scheduled to dine with tech executives from Apple, Meta, Google and OpenAI on Thursday night at a White House event in the newly renovated Rose Garden. The gathering is the latest example of how the world’s…",
+                    "url": "https://bsky.app/profile/u24usa.bsky.social/post/3ly3itmdmco2t"
+                },
+                {
+                    "author": "nasdaq.activitypub.awakari.com.ap.brid.gy",
+                    "created_at": "2025-09-05T10:10:23.000Z",
+                    "engagement_score": 0,
+                    "followers_count": 82,
+                    "likes": 0,
+                    "replies": 0,
+                    "reposts": 0,
+                    "text": "Tesla's Apple App Store Rank Race With Uber, Waymo Isn't Bullish, Says Gary Black As TSLA Stock Still Trails Nasdaq Gary Black, warned investors on Friday that Tesla Inc.'s Robotaxi app...\n\n#AAPL #electric #vehicles #Elon #Musk #Equities #GOOG #GOOGL #KeyProj […] \n\n[Original post on benzinga.com]",
+                    "url": "https://bsky.app/profile/nasdaq.activitypub.awakari.com.ap.brid.gy/post/3ly3o6cfhzvn2"
+                },
+                {
+                    "author": "elon.mu.sk",
+                    "created_at": "2025-09-04T18:02:06.055867+00:00",
+                    "engagement_score": 0,
+                    "followers_count": 36,
+                    "likes": 0,
+                    "replies": 0,
+                    "reposts": 0,
+                    "text": "Social News: Tesla has launched its robotaxi app on the Apple App Store. iPhone users can now download the app and join the waitlist. An Android version is expecte #elon #musk #elonmusk\nhttps://mu.sk/sf68",
+                    "url": "https://bsky.app/profile/elon.mu.sk/post/3lxzq4ikbu62p"
+                },
+                {
+                    "author": "bluesky.awakari.com",
+                    "created_at": "2025-09-04T12:09:09Z",
+                    "engagement_score": 0,
+                    "followers_count": 686,
+                    "likes": 0,
+                    "replies": 0,
+                    "reposts": 0,
+                    "text": "Trump to host tech CEOs over dinner for inaugural event in renovated Rose Garden Invitees include Meta founder Mark Zuckerberg, Apple CEO Tim Cook, Microsoft founder Bill Gates and OpenAI founder Sam Altman. Elon Musk was not on the list.\n\nInterest | Match | Feed",
+                    "url": "https://bsky.app/profile/bluesky.awakari.com/post/3lxz4fffunu24"
+                },
+                {
+                    "author": "bluesky.awakari.com",
+                    "created_at": "2025-09-03T16:59:17Z",
+                    "engagement_score": 0,
+                    "followers_count": 686,
+                    "likes": 0,
+                    "replies": 0,
+                    "reposts": 0,
+                    "text": "The Competitive Landscape Favors the iPhone, More on Elon Musk Suing Apple The Competitive Landscape Favors the iPhone A week from today, Apple will host its largest event of the… # UnitedStates # US # USA # ElonMusk # Musk https://www.europesays.com/2381489/\n\nInterest | Match | Feed",
+                    "url": "https://bsky.app/profile/bluesky.awakari.com/post/3lxx45bfc7w2v"
+                },
+                {
+                    "author": "europesays.bsky.social",
+                    "created_at": "2025-09-03T16:31:05+00:00",
+                    "engagement_score": 0,
+                    "followers_count": 2828,
+                    "likes": 0,
+                    "replies": 0,
+                    "reposts": 0,
+                    "text": "The Competitive Landscape Favors the iPhone, More on Elon Musk Suing Apple\n\nhttps://www.europesays.com/2381489/\n\nThe Competitive Landscape Favors the iPhone A week from today, Apple will host its largest event of the…",
+                    "url": "https://bsky.app/profile/europesays.bsky.social/post/3lxx2kwviul2e"
+                },
+                {
+                    "author": "europesays.bsky.social",
+                    "created_at": "2025-09-03T16:30:25+00:00",
+                    "engagement_score": 0,
+                    "followers_count": 2828,
+                    "likes": 0,
+                    "replies": 0,
+                    "reposts": 0,
+                    "text": "The Competitive Landscape Favors the iPhone, More on Elon Musk Suing Apple\n\nhttps://www.europesays.com/2381489/\n\nThe Competitive Landscape Favors the iPhone A week from today, Apple will host its largest event of the…",
+                    "url": "https://bsky.app/profile/europesays.bsky.social/post/3lxx2jqsp7t2g"
+                }
+            ]
+        }
+    }
+}
