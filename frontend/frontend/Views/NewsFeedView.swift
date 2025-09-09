@@ -11,12 +11,12 @@ struct NewsFlash: Identifiable, Codable {
 }
 
 struct TwitterPost: Identifiable, Codable {
-    var id: String { (author ?? "") + (created_at ?? "") + (url ?? "") }
+    var id: String { author + created_at + url }
     
-    let author: String?
-    let created_at: String?
-    let text: String?
-    let url: String?
+    let author: String
+    let created_at: String
+    let text: String
+    let url: String
     
     // Optional extra fields from JSON (to avoid decode crashes)
     let metric: String?
@@ -29,7 +29,7 @@ struct TwitterPost: Identifiable, Codable {
 
 struct NewsResponse: Codable {
     let google_feed: [NewsFlash]
-    let twitter_feed: [TwitterPost]?
+    let twitter_feed: [TwitterPost]
 }
 
 // Wrapper for selected item to use with sheet(item:)
@@ -66,6 +66,26 @@ struct NewsFeedView: View {
                             .foregroundColor(.gray)
                     }
                     .padding(.horizontal)
+                    
+                    // --- Bullish/Bearish Statistics ---
+                    if !googleNews.isEmpty {
+                        let total = googleNews.count
+                        let bullishCount = googleNews.filter { $0.sentiment.lowercased() == "bullish" }.count
+                        let bearishCount = googleNews.filter { $0.sentiment.lowercased() == "bearish" }.count
+                        let bullishPercent = Int(Double(bullishCount) / Double(total) * 100)
+                        let bearishPercent = Int(Double(bearishCount) / Double(total) * 100)
+                        
+                        HStack {
+                            Text("📈 Bullish: \(bullishPercent)%")
+                                .font(.caption)
+                                .foregroundColor(.green)
+                            Spacer()
+                            Text("📉 Bearish: \(bearishPercent)%")
+                                .font(.caption)
+                                .foregroundColor(.red)
+                        }
+                        .padding(.horizontal)
+                    }
                     
                     // News Highlights
                     HStack {
@@ -119,39 +139,37 @@ struct NewsFeedView: View {
                         }
                         
                         // Twitter News
-                        if !twitterNews.isEmpty {
-                            HStack {
-                                Text("Twitter Posts")
-                                    .font(.headline)
-                                Spacer()
-                            }
-                            .padding(.horizontal)
-                            .padding(.top, 16)
-                            
-                            ForEach(twitterNews) { t in
-                                Button {
-                                    selectedItem = SelectedItem(title: t.author ?? "Unknown Author", content: t.text ?? "")
-                                } label: {
-                                    VStack(alignment: .leading, spacing: 8) {
-                                        HStack {
-                                            Text(t.author ?? "Unknown Author")
-                                                .font(.subheadline)
-                                                .bold()
-                                        }
-                                        Text(t.text ?? "")
-                                            .font(.footnote)
-                                            .lineLimit(2)
-                                        Text(t.created_at ?? "")
-                                            .font(.caption)
-                                            .foregroundColor(.gray)
+                        HStack {
+                            Text("Twitter Posts")
+                                .font(.headline)
+                            Spacer()
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, 16)
+                        
+                        ForEach(twitterNews) { t in
+                            Button {
+                                selectedItem = SelectedItem(title: t.author, content: t.text)
+                            } label: {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    HStack {
+                                        Text(t.author)
+                                            .font(.subheadline)
+                                            .bold()
                                     }
-                                    .padding()
-                                    .background(Color(.secondarySystemBackground))
-                                    .cornerRadius(12)
+                                    Text(t.text)
+                                        .font(.footnote)
+                                        .lineLimit(2)
+                                    Text(t.created_at)
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
                                 }
-                                .buttonStyle(.plain)
-                                .padding(.horizontal)
+                                .padding()
+                                .background(Color(.secondarySystemBackground))
+                                .cornerRadius(12)
                             }
+                            .buttonStyle(.plain)
+                            .padding(.horizontal)
                         }
                     }
                     Spacer(minLength: 24)
@@ -228,18 +246,12 @@ struct NewsFeedView: View {
                     return
                 }
                 
-                if let raw = String(data: data, encoding: .utf8) {
-                    print("RAW RESPONSE:\n\(raw)")
-                }
-                
                 do {
                     let decoded = try JSONDecoder().decode(NewsResponse.self, from: data)
                     self.googleNews = decoded.google_feed
-                    self.twitterNews = decoded.twitter_feed ?? [] // fallback to empty
+                    self.twitterNews = decoded.twitter_feed
                 } catch {
                     self.errorMessage = "Decoding error: \(error.localizedDescription)"
-                    self.googleNews = []
-                    self.twitterNews = []
                 }
             }
         }.resume()

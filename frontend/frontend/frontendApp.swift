@@ -11,7 +11,7 @@ import SwiftUI
 struct frontendApp: App {
     var body: some Scene {
         WindowGroup {
-            RootTabView()
+            AuthRootTabView()
                 .preferredColorScheme(.dark)
         }
     }

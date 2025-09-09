@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct RootTabView: View {
+struct BottomNav: View {
     var body: some View {
         TabView {
             DashboardView()
@@ -21,6 +21,8 @@ struct RootTabView: View {
 
             MicrosavingsView()
                 .tabItem { Label("Save", systemImage: "target") }
+            SettingsView()                       // ← add this
+                            .tabItem { Label("Settings", systemImage: "gearshape") }
         }
         .tint(Finora.primary)
     }
