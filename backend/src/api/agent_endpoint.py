@@ -3,7 +3,7 @@ from pydantic import BaseModel
 import httpx
 import uuid
 import logging
-from utils.response_parser import parse_agent_run_response
+from utils.response_parser import extract_agent_responses
 
 app = FastAPI()
 logging.basicConfig(level=logging.INFO)
@@ -21,7 +21,7 @@ async def ask_agent(req: UserPrompt):
     session_id = f"s_{uuid.uuid4().hex[:6]}"
     app_name = "multi_tool_agent"
 
-    async with httpx.AsyncClient(timeout=120.0) as client:
+    async with httpx.AsyncClient(timeout=180.0) as client:
         try:
             # 1️⃣ Create session
             session_payload = {"state": {}}
@@ -44,8 +44,8 @@ async def ask_agent(req: UserPrompt):
 
             # 3️⃣ Return the raw events list exactly as received
             raw_response = run_resp.json()
-            # parsed_json = parse_agent_run_response(raw_response)
-            return raw_response
+            parsed_json = extract_agent_responses(raw_response)
+            return parsed_json
 
         except httpx.HTTPStatusError as e:
             logging.error(f"HTTP error: {e}")
